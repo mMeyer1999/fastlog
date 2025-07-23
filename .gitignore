@@ -1,0 +1,34 @@
+# Node modules (immer ignorieren)
+node_modules/
+
+# Build output (z. B. für TypeScript)
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local environment variables
+.env
+.env.local
+.env.*.local
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE/editor configs (optional, je nach Team)
+.vscode/
+.idea/
+*.swp
+
+# Test coverage outputs
+coverage/
+
+# TypeScript cache (wenn du es nutzt)
+*.tsbuildinfo
+
+# Bun specific
+bun.lockb
