@@ -39,13 +39,13 @@ Initial structure is in place. tRPC API and basic frontend components are in pro
 
 ## 🛠 Planned Tech Stack
 
-| Area         | Technology             |
-|--------------|------------------------|
-| Language     | TypeScript             |
-| Build Tool   | Bun                    |
-| API Backend  | tRPC + Zod             |
-| Data Storage | In-memory → SQLite     |
-| Hosting      | Local → Vercel later   |
+| Area         | Technology           |
+|--------------|----------------------|
+| Language     | TypeScript           |
+| Build Tool   | Bun                  |
+| API Backend  | tRPC + Zod           |
+| Data Storage | In-memory → SQLite   |
+| Hosting      | Local → Docker Swarm |
 
 ---
 
