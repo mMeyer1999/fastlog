@@ -29,11 +29,11 @@ Initial structure is in place. tRPC API and basic frontend components are in pro
 
 - [x] Repository initialized
 - [x] TypeScript + Bun setup
-- [ ] Basic tRPC API (`addEntry`, `getEntries`)
+- [ ] Basic tRPC API
 - [ ] Astro frontend structure
 - [ ] Entry form (Svelte)
 - [ ] Table/list for displaying entries
-- [ ] In-memory data handling (file or DB later)
+- [x] In-memory data handling (file or DB later)
 
 ---
 
@@ -44,8 +44,6 @@ Initial structure is in place. tRPC API and basic frontend components are in pro
 | Language     | TypeScript             |
 | Build Tool   | Bun                    |
 | API Backend  | tRPC + Zod             |
-| UI Framework | Astro + Svelte         |
-| Styling      | (optional) TailwindCSS |
 | Data Storage | In-memory → SQLite     |
 | Hosting      | Local → Vercel later   |
 
