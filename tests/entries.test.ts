@@ -17,6 +17,19 @@ describe("Entries API", () => {
         expect(response.status).toBe(200);
         expect(Array.isArray(response.body)).toBe(true);
     });
+    it("GET /entry/:id should return a specific entry by ID and status 200", async () => {
+        entries.push(testEntry);
+        const response = await request(app).get(`/entries/${testEntry.id}`);
+        expect(response.status).toBe(200);
+        expect(response.body.id).toBe(testEntry.id);
+        expect(response.body.entry).toBe(testEntry.entry);
+    });
+    it("GET /entry/:id should return 404 for non-existent entry", async () => {
+        const nonExistentId = uuidv7();
+        const response = await request(app).get(`/entries/${nonExistentId}`);
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Entry not found");
+    })
     it("POST /entry should add a new entry and return status 201", async () => {
         const newEntry = { entry: "Test entry" };
         const response = await request(app).post("/entries").send(newEntry);

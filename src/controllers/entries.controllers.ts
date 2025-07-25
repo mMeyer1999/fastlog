@@ -8,6 +8,21 @@ export function getEntries(req: Request, res: Response) {
     res.status(200).json(entries);
 }
 
+export function getEntry(req: Request, res: Response, next: NextFunction) {
+    try {
+        const parsedId = idSchema.parse(req.params.id);
+        const entry = entries.find(entry => entry.id === parsedId);
+
+        if (!entry) {
+            throw new HttpError(404, "Entry not found");
+        }
+
+        res.status(200).json(entry);
+    } catch (error) {
+        next(error);
+    }
+}
+
 export function addEntry(req: Request, res: Response, next: NextFunction) {
     try {
         const parsedEntry = entrySchema.parse(req.body);
