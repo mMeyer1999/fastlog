@@ -30,10 +30,12 @@ Initial structure is in place. tRPC API and basic frontend components are in pro
 - [x] Repository initialized
 - [x] TypeScript + Bun setup
 - [ ] Basic tRPC API
-- [ ] Astro frontend structure
-- [ ] Entry form (Svelte)
-- [ ] Table/list for displaying entries
-- [x] In-memory data handling (file or DB later)
+- [ ] Endpoints for fasting sessions
+- [ ] Endpoints for weight entries
+- [ ] Endpoints for statistics
+- [ ] Endpoints for user management
+- [ ] Simple frontend structure
+- [x] In-memory data handling (DB later)
 
 ---
 
