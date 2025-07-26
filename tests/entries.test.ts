@@ -3,6 +3,7 @@ import request from "supertest";
 import {v7 as uuidv7} from "uuid";
 import app from "../src/app";
 import {entries} from "../src/store/entries.store.ts";
+import { appRouter} from "../src/trpc/router.ts";
 
 const testEntry = { id: uuidv7(), entry: "Test entry", createdAt: new Date().toISOString() };
 
@@ -11,78 +12,63 @@ beforeEach(() => {
     entries.length = 0;
 })
 
-describe("Entries API", () => {
-    it("GET /entries should return all entries and status 200", async () => {
-        const response = await request(app).get("/entries");
-        expect(response.status).toBe(200);
-        expect(Array.isArray(response.body)).toBe(true);
+describe("TRPC Entries Router", () => {
+    it('getAll should return all entries', async () => {
+        const caller = appRouter.createCaller({});
+        const result = await caller.entries.getAll();
+        expect(Array.isArray(result)).toBe(true);
+        expect(result.length).toBe(0); // Initially, there should be no entries
     });
-    it("GET /entry/:id should return a specific entry by ID and status 200", async () => {
-        entries.push(testEntry);
-        const response = await request(app).get(`/entries/${testEntry.id}`);
-        expect(response.status).toBe(200);
-        expect(response.body.id).toBe(testEntry.id);
-        expect(response.body.entry).toBe(testEntry.entry);
+    it('add should add a new entry and return it', async () => {
+        const caller = appRouter.createCaller({});
+        const result = await caller.entries.add(testEntry);
+        expect(result.entry).toBe(testEntry.entry)
+        expect(result.id).toBeDefined();
+        expect(result.createdAt).toBeDefined();
+        expect(entries.length).toBe(1); // Should have one entry now
     });
-    it("GET /entry/:id should return 404 for non-existent entry", async () => {
+    it('update should update an existing entry', async () => {
+        const caller = appRouter.createCaller({});
+        entries.push(testEntry); // Add test entry to update
+        const updatedEntry = { id: testEntry.id, entry: "Updated entry" };
+        const result = await caller.entries.update(updatedEntry);
+        expect(result.entry).toBe(updatedEntry.entry);
+    });
+    it('update should throw an error for non-existent entry', async () => {
+        const caller = appRouter.createCaller({});
         const nonExistentId = uuidv7();
-        const response = await request(app).get(`/entries/${nonExistentId}`);
-        expect(response.status).toBe(404);
-        expect(response.body.message).toBe("Entry not found");
-    })
-    it("POST /entry should add a new entry and return status 201", async () => {
-        const newEntry = { entry: "Test entry" };
-        const response = await request(app).post("/entries").send(newEntry);
-        expect(response.status).toBe(201);
-        expect(response.body.message).toBe("Entry added successfully");
+        await expect(caller.entries.update({ id: nonExistentId, entry: "Updated entry" })).rejects.toThrow("Entry not found");
     });
-    it("POST /entry should return 400 for invalid entry", async () => {
+    it('delete should remove an entry', async () => {
+        const caller = appRouter.createCaller({});
+        entries.push(testEntry); // Add test entry to delete
+        const result = await caller.entries.delete(testEntry.id);
+        expect(result.message).toBe("Entry deleted successfully");
+        expect(entries.length).toBe(0); // Should have no entries now
+    });
+    it('delete should throw an error for non-existent entry', async () => {
+        const caller = appRouter.createCaller({});
+        const nonExistentId = uuidv7();
+        await expect(caller.entries.delete(nonExistentId)).rejects.toThrow("Entry not found");
+    });
+    it('add should throw an error for invalid entry', async () => {
+        const caller = appRouter.createCaller({});
         const invalidEntry = { entry: "" }; // Invalid because entry is empty
-        const response = await request(app).post("/entries").send(invalidEntry);
-        expect(response.status).toBe(400);
-        expect(response.body.errors[0].message).toBe("Content cannot be empty");
+        await expect(caller.entries.add(invalidEntry)).rejects.toThrow("Content cannot be empty");
     })
-    it('GET /entries should return one element when it was added', async () => {
-        entries.push(testEntry);
-        const expectedEntry = { entry: "Test entry" };
-        const response = await request(app).get("/entries");
-        expect(response.status).toBe(200);
-        expect(response.body.length).toBe(1);
-        expect(response.body[0].entry).toBe(expectedEntry.entry);
-    });
-    it('PUT /entry/:id should update element', async () => {
-        entries.push(testEntry);
-        const entriesResponse = await request(app).get("/entries");
-        const entryId = entriesResponse.body[0].id;
-        const updatedEntry = { entry: "Updated entry" };
-        const response = await request(app).put(`/entries/${entryId}`).send(updatedEntry);
-        expect(response.status).toBe(200);
-        expect(response.body.message).toBe("Entry updated successfully");
+})
 
-        // Verify entry was updated correctly
-        const updatedEntriesResponse = await request(app).get("/entries");
-        expect(updatedEntriesResponse.body[0].entry).toBe(updatedEntry.entry);
-    });
-    it('PUT /entry/:id should return 404 for non-existent entry', async () => {
-        const nonExistentId = uuidv7();
-        const updatedEntry = { entry: "Updated entry" };
-        const response = await request(app).put(`/entries/${nonExistentId}`).send(updatedEntry);
+describe('Test HTTP Error Handling', () => {
+    it('should return 404 for non-existent route', async () => {
+        const response = await request(app).get("/non-existent-route");
         expect(response.status).toBe(404);
-        expect(response.body.message).toBe("Entry not found");
     });
-    it('DELETE /entry/:id should delete element', async () => {
-        entries.push(testEntry);
-        const entriesResponse = await request(app).get("/entries");
-        const entryId = entriesResponse.body[0].id;
-        const response = await request(app).delete(`/entries/${entryId}`);
-        expect(response.status).toBe(200);
-        const updatedEntriesResponse = await request(app).get("/entries");
-        expect(updatedEntriesResponse.body.length).toBe(0);
-    });
-    it('DELETE /entry/:id should return 404 for non-existent entry', async () => {
-        const nonExistentId = uuidv7();
-        const response = await request(app).delete(`/entries/${nonExistentId}`);
-        expect(response.status).toBe(404);
-        expect(response.body.message).toBe("Entry not found");
-    });
+    it('Validation error should return 400', async () => {
+        const response = await request(app).post('/trpc/entries.add')
+            .send({
+                entry: "",
+            });
+        expect(response.status).toBe(400);
+        expect(response.body.error.message).toContain("Content cannot be empty");
+    })
 })

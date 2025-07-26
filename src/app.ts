@@ -1,13 +1,14 @@
 import express from 'express';
-import {entriesRouter} from "./routes/entries.routes.ts";
-import {errorHandler} from "./middlewares/errorHandler.middlewares.ts";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import { appRouter } from "./trpc/router.ts";
+import { createContext } from "./trpc/context.ts";
 
 const app = express();
 app.use(express.json());
 
-app.use('/entries', entriesRouter);
-
-// Error handling middleware
-app.use(errorHandler);
+app.use('/trpc', createExpressMiddleware({
+    router: appRouter,
+    createContext
+}));
 
 export default app
